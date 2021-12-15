@@ -107,7 +107,9 @@ class NicoCapture:
             response = api.media_upload(filename)
             print(response)
             media_ids.append(response.media_id_string)
-        api.update_status("", media_ids=media_ids)
+        status = ("{d.year}/{d.month}/{d.day} {d.hour}:{d.minute:02}:{d.second:02}"
+                  .format(d=datetime.datetime.now()))
+        api.update_status(status, media_ids=media_ids)
 
     @staticmethod
     def tweepy_api(community):
