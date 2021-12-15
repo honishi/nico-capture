@@ -2,11 +2,16 @@
 
 import configparser
 import json
+import os
+import time
+import uuid
 
-import requests
 from bs4 import BeautifulSoup
+import requests
+import tweepy
 
 LIVE_BASE_URL = "https://live.nicovideo.jp/watch/"
+IMAGE_FETCH_INTERVAL_SEC = 3
 
 
 class Community:
@@ -27,7 +32,21 @@ class NicoCapture:
         print(self.communities)
         for community in self.communities:
             print(community.community)
-            print(self.fetch_live_thumbnail(community.community))
+            filenames = []
+            max_image_count = 4
+            for count in range(max_image_count):
+                if count > 0:
+                    print(f"sleeping... {count}/{max_image_count - 1}")
+                    time.sleep(IMAGE_FETCH_INTERVAL_SEC)
+                image_url = NicoCapture.fetch_live_thumbnail(community.community)
+                if image_url is None:
+                    continue
+                filename = NicoCapture.save_image(image_url)
+                filenames.append(filename)
+                print(f"fetched: {filename}")
+            api = NicoCapture.tweepy_api(community)
+            NicoCapture.tweet_images(api, filenames)
+            NicoCapture.remove_files(filenames)
 
     @staticmethod
     def read_communities():
@@ -59,12 +78,45 @@ class NicoCapture:
             return None
         data_props_json = json.loads(data_props)
         program_status = data_props_json["program"]["status"]
-        print(program_status)
-
+        # print(program_status)
+        if program_status != "ON_AIR":
+            return None
         meta_image = soup.select_one("meta[property=\"og:image\"]")
         if meta_image is None:
             return None
         return meta_image["content"]
+
+    @staticmethod
+    def save_image(url):
+        filename = str(uuid.uuid1())[:8] + ".jpg"
+        response = requests.get(url)
+        file = open(filename, "wb")
+        file.write(response.content)
+        file.close()
+        return filename
+
+    def delete_file(self, file_name):
+        pass
+
+    @staticmethod
+    def tweet_images(api, filenames):
+        media_ids = []
+        for filename in filenames:
+            response = api.media_upload(filename)
+            print(response)
+            media_ids.append(response.media_id_string)
+        api.update_status("", media_ids=media_ids)
+
+    @staticmethod
+    def tweepy_api(community):
+        auth = tweepy.OAuthHandler(community.consumer_key, community.consumer_secret)
+        auth.set_access_token(community.token, community.token_secret)
+        return tweepy.API(auth)
+
+    @staticmethod
+    def remove_files(filenames):
+        for filename in filenames:
+            os.remove(filename)
 
 
 nico_capture = NicoCapture()

@@ -1,11 +1,11 @@
 [co12345]
-consumer_key = "xxx"
-consumer_secret = "xxx"
-token = "xxx"
-token_secret = "xxx"
+consumer_key = xxx
+consumer_secret = xxx
+token = xxx
+token_secret = xxx
 
 [co23456]
-consumer_key = "xxx"
-consumer_secret = "xxx"
-token = "xxx"
-token_secret = "xxx"
+consumer_key = xxx
+consumer_secret = xxx
+token = xxx
+token_secret = xxx
