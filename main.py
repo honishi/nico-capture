@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import configparser
+import datetime
 import json
 import os
 import time
@@ -29,9 +30,10 @@ class NicoCapture:
         pass
 
     def start(self):
-        print(self.communities)
+        # print(self.communities)
         for community in self.communities:
-            print(community.community)
+            print(f"*** {datetime.datetime.now()}")
+            print(f"{community.community}")
             filenames = []
             max_image_count = 4
             for count in range(max_image_count):
@@ -40,10 +42,13 @@ class NicoCapture:
                     time.sleep(IMAGE_FETCH_INTERVAL_SEC)
                 image_url = NicoCapture.fetch_live_thumbnail(community.community)
                 if image_url is None:
-                    continue
+                    break
                 filename = NicoCapture.save_image(image_url)
                 filenames.append(filename)
                 print(f"fetched: {filename}")
+            if len(filenames) == 0:
+                print("no images fetched.")
+                break
             api = NicoCapture.tweepy_api(community)
             NicoCapture.tweet_images(api, filenames)
             NicoCapture.remove_files(filenames)
@@ -94,9 +99,6 @@ class NicoCapture:
         file.write(response.content)
         file.close()
         return filename
-
-    def delete_file(self, file_name):
-        pass
 
     @staticmethod
     def tweet_images(api, filenames):
