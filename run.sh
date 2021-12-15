@@ -2,11 +2,15 @@
 
 set -e
 
-basedir=$(cd $(dirname $0);pwd)
-program=${basedir}/nicocomment.py
+base_dir=$(cd $(dirname $0);pwd)
+custom_env=${base_dir}/run.env
 
-logfile=${basedir}/log/nico-capture.log
+logfile=${base_dir}/log/nico-capture.log
 
-cd ${basedir}
+if [ -e ${custom_env} ]; then
+    source ${custom_env}
+fi
+
+cd ${base_dir}
 
 ./main.py >> ${logfile}

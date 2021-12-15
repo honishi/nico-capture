@@ -1,3 +1,4 @@
 settings.ini
 *.jpg
 log/*
+run.env
