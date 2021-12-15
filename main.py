@@ -12,7 +12,7 @@ import requests
 import tweepy
 
 LIVE_BASE_URL = "https://live.nicovideo.jp/watch/"
-IMAGE_FETCH_INTERVAL_SEC = 3
+IMAGE_FETCH_INTERVAL_SEC = 25
 
 
 class Community:
