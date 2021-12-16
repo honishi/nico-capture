@@ -12,7 +12,7 @@ import requests
 import tweepy
 
 LIVE_BASE_URL = "https://live.nicovideo.jp/watch/"
-IMAGE_FETCH_INTERVAL_SEC = 25
+IMAGE_FETCH_INTERVAL_SEC = 30
 
 
 class Community:
@@ -27,10 +27,11 @@ class Community:
 class NicoCapture:
     def __init__(self):
         self.communities = self.read_communities()
-        pass
 
     def start(self):
         # print(self.communities)
+        status = ("{d.year}/{d.month}/{d.day} {d.hour}:{d.minute:02}:{d.second:02}"
+                  .format(d=datetime.datetime.now()))
         for community in self.communities:
             print(f"*** {datetime.datetime.now()}")
             print(f"{community.community}")
@@ -50,7 +51,7 @@ class NicoCapture:
                 print("no images fetched.")
                 break
             api = NicoCapture.tweepy_api(community)
-            NicoCapture.tweet_images(api, filenames)
+            NicoCapture.tweet_images(api, filenames, status)
             NicoCapture.remove_files(filenames)
 
     @staticmethod
@@ -101,14 +102,12 @@ class NicoCapture:
         return filename
 
     @staticmethod
-    def tweet_images(api, filenames):
+    def tweet_images(api, filenames, status):
         media_ids = []
         for filename in filenames:
             response = api.media_upload(filename)
             print(response)
             media_ids.append(response.media_id_string)
-        status = ("{d.year}/{d.month}/{d.day} {d.hour}:{d.minute:02}:{d.second:02}"
-                  .format(d=datetime.datetime.now()))
         api.update_status(status, media_ids=media_ids)
 
     @staticmethod
