@@ -13,6 +13,7 @@ import tweepy
 
 LIVE_BASE_URL = "https://live.nicovideo.jp/watch/"
 IMAGE_FETCH_INTERVAL_SEC = 30
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
 
 
 class Community:
@@ -73,7 +74,7 @@ class NicoCapture:
 
     @staticmethod
     def fetch_live_thumbnail(community):
-        response = requests.get(LIVE_BASE_URL + community)
+        response = requests.get(LIVE_BASE_URL + community, headers=NicoCapture.make_http_header())
         soup = BeautifulSoup(response.text, 'html.parser')
 
         script_embedded_data = soup.select_one("script[id=\"embedded-data\"]")
@@ -95,7 +96,7 @@ class NicoCapture:
     @staticmethod
     def save_image(url):
         filename = str(uuid.uuid1())[:8] + ".jpg"
-        response = requests.get(url)
+        response = requests.get(url, headers=NicoCapture.make_http_header())
         file = open(filename, "wb")
         file.write(response.content)
         file.close()
@@ -120,6 +121,10 @@ class NicoCapture:
     def remove_files(filenames):
         for filename in filenames:
             os.remove(filename)
+
+    @staticmethod
+    def make_http_header():
+        return {'User-Agent': USER_AGENT}
 
 
 nico_capture = NicoCapture()
